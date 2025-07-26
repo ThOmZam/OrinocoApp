@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sistema de Control Autolavado v7.4.6-classic</title>
+
+  <link rel="icon" href="https://firebasestorage.googleapis.com/v0/b/orinocoapp-67c09.firebasestorage.app/o/favicon.ico?alt=media&token=29f6a227-285d-43a1-98d8-210fe41bf34b" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="app">
+
+  <!-- LOGIN -->
+  <section id="loginScreen" class="login-wrap">
+    <div class="auth-card">
+      <img src="https://i.ibb.co/j9YGRyPp/LOGO.png" alt="logo" class="auth-logo" />
+      <h1 class="auth-title">Sistema de Control Autolavado</h1>
+      <div class="auth-version">Versión 7.4.6-classic</div>
+
+      <label for="pinInput" class="auth-label text-center">INGRESE PIN</label>
+      <input id="pinInput" type="password" class="auth-input" maxlength="6" autocomplete="off" />
+      <button id="loginBtn" class="btn btn-primary w-full mt-3">Entrar</button>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <div id="appContent" class="hidden">
+    <!-- NAV -->
+    <nav class="navbar sticky">
+      <div class="container nav-inner">
+        <div class="nav-left">
+          <img src="https://i.ibb.co/j9YGRyPp/LOGO.png" alt="logo" class="nav-logo">
+          <div>
+            <h2 class="nav-title">Sistema de Control Autolavado</h2>
+            <!-- versión eliminada del título superior -->
+          </div>
+        </div>
+
+        <div class="nav-right">
+          <button id="logoutBtn" class="btn btn-danger">Cerrar sesión</button>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="tabs">
+          <button class="tab-button active" data-tab="registro"      id="tabRegistro">Registro</button>
+          <button class="tab-button"           data-tab="inventario"   id="tabInventario">Inventario</button>
+          <button class="tab-button"           data-tab="resumen"      id="tabResumen">Resumen</button>
+          <button class="tab-button"           data-tab="clientes"     id="tabClientes">Clientes</button>
+          <button class="tab-button"           data-tab="caja"         id="tabCaja">Caja / Turnos</button>
+          <button class="tab-button"           data-tab="auditoria"    id="tabAuditoria">Auditoría</button>
+	<button class="tab-button"           data-tab="config"       id="tabConfig">Configuración</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- NOTIFICACIONES -->
+    <div id="notificationArea" class="notifications hidden"></div>
+
+    <main class="container main-area">
+
+      <!-- ======= REGISTRO ======= -->
+      <section id="contentRegistro" class="tab-content">
+        <div class="card">
+          <div class="card-title">Nuevo servicio / venta</div>
+
+          <!-- Cliente -->
+          <div class="subsection-title">Cliente</div>
+          <div class="form-row">
+            <div>
+              <label>Fecha</label>
+              <input type="date" id="regFechaInput">
+            </div>
+            <div>
+              <label>Cliente</label>
+              <input type="text" id="regClienteNombreInput" placeholder="Nombre del cliente">
+            </div>
+          </div>
+
+          <!-- Servicio -->
+          <div class="subsection-title">Servicio</div>
+          <div class="form-row">
+            <div>
+              <label>Vehículo</label>
+              <select id="regVehiculoSelect"></select>
+            </div>
+            <div>
+              <label>Modelo</label>
+              <input type="text" id="regModeloInput">
+            </div>
+            <div>
+              <label>Color</label>
+              <input type="text" id="regColorInput">
+            </div>
+            <div>
+              <label>Servicio</label>
+              <select id="regServicioSelect"></select>
+            </div>
+          </div>
+
+          <!-- Productos -->
+          <div class="subsection-title">Productos adicionales</div>
+          <div id="productosAdicionalesContainer" class="productos-inline"></div>
+          <button id="addProductoAdicionalBtn" class="btn btn-light" type="button">+ Agregar</button>
+
+          <!-- Pago -->
+          <div class="subsection-title">Pago</div>
+          <div class="form-row">
+            <div>
+              <label>Método de pago</label>
+              <select id="regMetodoPagoSelect">
+                <option value="Divisa">Divisa</option>
+                <option value="Bs Efectivo">Bs Efectivo</option>
+                <option value="Punto de venta (POS)">Punto de venta (POS)</option>
+                <option value="Pago Móvil">Pago Móvil</option>
+                <option value="Zelle">Zelle</option>
+                <option value="Transferencia">Transferencia</option>
+              </select>
+            </div>
+            <div>
+              <label>Propinas (USD)</label>
+              <input type="number" id="regPropinasInput" step="0.01" value="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Referencia (opcional)</label>
+              <input type="text" id="regReferenciaInput" placeholder="opcional">
+            </div>
+          </div>
+
+          <!-- Totales -->
+          <div class="subsection-title">Totales</div>
+          <div class="form-row">
+            <div>
+              <label>Total USD</label>
+              <input type="text" id="regMontoDolaresInput" readonly>
+            </div>
+            <div>
+              <label>Total Bs</label>
+              <input type="text" id="regMontoBsInput" readonly>
+            </div>
+          </div>
+
+          <button id="saveRegistroBtn" class="btn btn-primary mt-2">Guardar</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Registro diario</div>
+
+          <!-- Filtros en una sola línea -->
+          <div class="form-row-3">
+            <div>
+              <label>Cliente</label>
+              <input type="text" id="filterClienteNombreInput">
+            </div>
+            <div>
+              <label>Vehículo</label>
+              <select id="filterVehiculoSelect"></select>
+            </div>
+            <div>
+              <label>Modelo</label>
+              <input type="text" id="filterModeloInput">
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table" id="tableRegistro">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Cliente</th>
+                  <th>Vehículo</th>
+                  <th>Modelo</th>
+                  <th>Servicio</th>
+                  <th>Productos</th>
+                  <th>Propinas</th>
+                  <th>Método</th>
+                  <th>Total Bs</th>
+                  <th>Total USD</th>
+                  <th>Referencia</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tableRegistroBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======= INVENTARIO ======= -->
+      <section id="contentInventario" class="tab-content hidden">
+        <div class="card">
+          <div class="card-title">Nuevo / Reabastecer producto</div>
+          <div class="form-row-3">
+            <div>
+              <label>Nombre</label>
+              <input type="text" id="invNombreInput" placeholder="Escribe o elige el mismo para reabastecer">
+            </div>
+            <div>
+              <label>Costo U (USD)</label>
+              <input type="number" id="invCostoUInput" step="0.01" value="0">
+            </div>
+            <div>
+              <label>Empaquetado</label>
+              <input type="number" id="invEmpaquetadoInput" value="1">
+            </div>
+            <div>
+              <label>Distribuidor</label>
+              <input type="text" id="invDistribuidorInput">
+            </div>
+            <div>
+              <label>Fecha compra</label>
+              <input type="date" id="invFechaCompraInput">
+            </div>
+            <div>
+              <label>Cantidad comprada</label>
+              <input type="number" id="invCantidadCompradaInput" value="0">
+            </div>
+            <div>
+              <label>Precio venta USD</label>
+              <input type="number" id="invPrecioVentaUSDInput" step="0.01" value="0">
+            </div>
+            <div>
+              <label>Stock mínimo</label>
+              <input type="number" id="invMinStockInput" value="0">
+            </div>
+          </div>
+
+          <button id="saveInventarioBtn" class="btn btn-primary mt-2">Guardar / Reabastecer</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Inventario</div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Costo U</th>
+                <th>Empaq.</th>
+                <th>Distribuidor</th>
+                <th>Fecha Compra</th>
+                <th>Qty comprada</th>
+                <th>Costo total</th>
+                <th>Precio USD</th>
+                <th>Precio Bs</th>
+                <th>Cantidad actual</th>
+                <th>Valor inventario</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tableInventarioBody"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Movimientos de inventario</div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Costo U</th>
+                <th>Total USD</th>
+                <th>Motivo</th>
+                <th>Usuario/Dispositivo</th>
+              </tr>
+            </thead>
+            <tbody id="tableMovInventarioBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======= RESUMEN (incluye GRÁFICAS) ======= -->
+      <section id="contentResumen" class="tab-content hidden">
+        <div class="card">
+          <div class="card-title">Metas del día</div>
+          <div id="dailyGoalsWrapper"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Cierres</div>
+
+          <h4>Diario</h4>
+          <div class="resumen-grid">
+            <div class="resume-box"><span class="label">Vehículos</span><span id="resumenDiaVehiculos">0</span></div>
+            <div class="resume-box"><span class="label">Ingresos USD</span><span id="resumenDiaUsd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ingresos Bs</span><span id="resumenDiaBs">Bs 0,00</span></div>
+            <div class="resume-box"><span class="label">Productos vendidos (USD)</span><span id="resumenDiaCostoProd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Gastos (USD)</span><span id="resumenDiaGastos">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ganancia Bruta (USD)</span><span id="resumenDiaGanancia">$0.00</span></div>
+	    <div class="resume-box"><span class="label">Propinas USD</span><span id="resumenDiaPropinas">$0.00</span></div>
+          </div>
+
+          <h4>Semanal</h4>
+          <div class="resumen-grid">
+            <div class="resume-box"><span class="label">Vehículos</span><span id="resumenSemVehiculos">0</span></div>
+            <div class="resume-box"><span class="label">Ingresos USD</span><span id="resumenSemUsd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ingresos Bs</span><span id="resumenSemBs">Bs 0,00</span></div>
+            <div class="resume-box"><span class="label">Productos vendidos (USD)</span><span id="resumenSemCostoProd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Gastos (USD)</span><span id="resumenSemGastos">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ganancia Bruta (USD)</span><span id="resumenSemGanancia">$0.00</span></div>
+	    <div class="resume-box"><span class="label">Propinas USD</span><span id="resumenSemanaPropinas">$0.00</span></div>
+          </div>
+
+          <h4>Mensual</h4>
+          <div class="resumen-grid">
+            <div class="resume-box"><span class="label">Vehículos</span><span id="resumenMesVehiculos">0</span></div>
+            <div class="resume-box"><span class="label">Ingresos USD</span><span id="resumenMesUsd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ingresos Bs</span><span id="resumenMesBs">Bs 0,00</span></div>
+            <div class="resume-box"><span class="label">Productos vendidos (USD)</span><span id="resumenMesCostoProd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Gastos (USD)</span><span id="resumenMesGastos">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ganancia Bruta (USD)</span><span id="resumenMesGanancia">$0.00</span></div>
+	    <div class="resume-box"><span class="label">Propinas USD</span><span id="resumenMesPropinas">$0.00</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Reportes Gráficos</div>
+          <div id="chartsContainer">
+          <div class="chart-card">
+            <h4>Ingresos por Día de la Semana</h4>
+            <canvas id="chartIngresosSemana" height="160"></canvas>
+          </div>
+          <div class="chart-card">
+            <h4>Servicios más vendidos</h4>
+            <canvas id="chartServicios" height="160"></canvas>
+          </div>
+          <div class="chart-card">
+            <h4>Productos más vendidos</h4>
+            <canvas id="chartProductos" height="160"></canvas>
+          </div>
+          <div class="chart-card">
+            <h4>Vehículos más atendidos</h4>
+            <canvas id="chartVehiculos" height="160"></canvas>
+          </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======= CLIENTES ======= -->
+      <section id="contentClientes" class="tab-content hidden">
+        <div class="card">
+          <div class="card-title">Nuevo cliente</div>
+          <div class="form-row-4 align-end">
+            <div>
+              <label>Nombre</label>
+              <input type="text" id="clienteNombreInput">
+            </div>
+            <div>
+              <label>Teléfono</label>
+              <input type="text" id="clienteTelefonoInput">
+            </div>
+            <div>
+              <label>Email</label>
+              <input type="text" id="clienteEmailInput">
+            </div>
+            <div class="align-end">
+              <button id="saveClienteBtn" class="btn btn-primary">Guardar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Clientes</div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tableClientesBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======= CONFIGURACIÓN ======= -->
+      <section id="contentConfig" class="tab-content hidden">
+
+        <div class="card">
+          <div class="card-title">Tema y apariencia</div>
+          <label class="dark-toggle" style="margin-top:6px;">
+            <input type="checkbox" id="toggleDarkModeConfig">
+            Activar modo oscuro
+          </label>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Preferencias</div>
+          <div class="form-row-4">
+            <div>
+              <label>Tasa de cambio (VES/USD)</label>
+              <input type="number" id="exchangeRateInput" step="0.01" value="120">
+            </div>
+            <div>
+              <label>Meta vehículos (día)</label>
+              <input type="number" id="goalVehiculosInput" value="10">
+            </div>
+            <div>
+              <label>Meta USD (día)</label>
+              <input type="number" id="goalUsdInput" step="0.01" value="100">
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button id="saveConfigBtn" class="btn btn-primary">Guardar</button>
+            </div>
+          </div>
+        </div>
+
+<!-- Personalización de colores -->
+<div class="card">
+  <div class="card-title">Colores de la interfaz</div>
+
+  <div class="form-row-4">
+    <div>
+      <label>Primario</label>
+      <input type="color" id="primaryColorPicker" value="#3b82f6" />
+    </div>
+    <div>
+      <label>Fondo</label>
+      <input type="color" id="backgroundColorPicker" value="#f5f6f8" />
+    </div>
+    <div>
+      <label>Texto</label>
+      <input type="color" id="textColorPicker" value="#1f2937" />
+    </div>
+    <div style="display:flex;align-items:flex-end;">
+      <button id="resetColorsBtn" class="btn btn-light w-full">Restaurar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Backup -->
+<div class="card">
+  <div class="card-title">Respaldo diario</div>
+  <label class="dark-toggle" style="margin-top:6px;">
+    <input type="checkbox" id="toggleAutoBackup">
+    Habilitar backup automático al iniciar sesión
+  </label>
+</div>
+
+
+	
+
+        <div class="card">
+          <div class="card-title">Cambiar PIN</div>
+          <div class="form-row-4">
+            <div>
+              <label>PIN actual</label>
+              <input type="password" id="currentPinInput" maxlength="6">
+            </div>
+            <div>
+              <label>Nuevo PIN</label>
+              <input type="password" id="newPinInput" maxlength="6">
+            </div>
+            <div>
+              <label>Confirmar nuevo PIN</label>
+              <input type="password" id="confirmNewPinInput" maxlength="6">
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button id="changePinBtn" class="btn btn-primary">Cambiar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Tipos de vehículo</div>
+          <div class="form-row-1">
+            <div class="inline">
+              <input type="text" id="newVehicleTypeInput" placeholder="Nuevo tipo" />
+              <button id="addVehicleTypeBtn" class="btn btn-primary">Agregar</button>
+            </div>
+            <ul id="vehicleTypeList" class="list-simple"></ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Servicios</div>
+          <div class="form-row-1">
+            <div class="inline">
+              <input type="text" id="newServiceTypeNameInput" placeholder="Nuevo servicio" />
+              <button id="addServiceTypeNameBtn" class="btn btn-primary">Agregar</button>
+            </div>
+            <ul id="serviceTypeNameList" class="list-simple"></ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Precios (USD)</div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Vehículo</th>
+                <th>Servicio</th>
+                <th>USD</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="servicePriceTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======= CAJA / TURNOS ======= -->
+      <section id="contentCaja" class="tab-content hidden">
+        <div class="card">
+          <div class="card-title">Apertura de turno</div>
+          <div class="form-row-3">
+            <div>
+              <label>Responsable</label>
+              <input type="text" id="turnoResponsableInput">
+            </div>
+            <div>
+              <label>Fondo inicial USD</label>
+              <input type="number" id="turnoFondoInicialInput" step="0.01" value="0">
+            </div>
+            <div>
+              <label>Fondo inicial Bs</label>
+              <input type="number" id="turnoFondoInicialBsInput" step="0.01" value="0">
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button id="abrirTurnoBtn" class="btn btn-primary">Abrir turno</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Cerrar turno</div>
+          <div class="form-row-3">
+            <div>
+              <label>Efectivo cierre USD</label>
+              <input type="number" id="turnoEfectivoCierreInput" step="0.01" value="0">
+            </div>
+            <div>
+              <label>Efectivo cierre Bs</label>
+              <input type="number" id="turnoEfectivoCierreBsInput" step="0.01" value="0">
+            </div>
+            <div>
+              <label>Observaciones</label>
+              <input type="text" id="turnoObsCierreInput">
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button id="cerrarTurnoBtn" class="btn btn-danger">Cerrar turno</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Turnos</div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Apertura</th>
+                <th>Cierre</th>
+                <th>Responsable</th>
+                <th>Fondo inicial USD</th>
+                <th>Fondo inicial Bs</th>
+                <th>Efectivo cierre USD</th>
+                <th>Efectivo cierre Bs</th>
+                <th>Obs.</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tableTurnosBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======= AUDITORÍA ======= -->
+      <section id="contentAuditoria" class="tab-content hidden">
+        <div class="card">
+          <div class="card-title">Logs</div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Nivel</th>
+                <th>Mensaje</th>
+                <th>Usuario / Dispositivo</th>
+              </tr>
+            </thead>
+            <tbody id="tableLogsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="app-footer">
+      Design by <strong>ThOmZam</strong> with <strong>ChatGPT</strong> · v7.4.6‑classic
+    </footer>
+  </div>
+
+  <!-- MODAL -->
+  <div id="customModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <h3 id="modalTitle" class="modal-title"></h3>
+      <p id="modalMessage" class="modal-message"></p>
+      <input id="modalPinInput" type="password" class="modal-pin hidden" maxlength="6">
+      <div class="modal-buttons">
+        <button id="modalCancelBtn" class="btn btn-light hidden">Cancelar</button>
+        <button id="modalConfirmBtn" class="btn btn-primary">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="assets/main.js"></script>
+</body>
+</html>
