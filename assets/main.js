@@ -1,5 +1,5 @@
 /* ===========================
-   Sistema Autolavado v7.4.6-classic
+   Sistema Autolavado v1.0.0-classic
    =========================== */
 
 import {
@@ -25,7 +25,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 /* ------------ Constantes ------------ */
-const APP_VERSION = "7.4.6-classic";
+const APP_VERSION = "1.0.0-classic";
 const DEFAULT_ADMIN_PIN = "1505";
 const DEFAULT_EXCHANGE_RATE = 120;
 
@@ -130,9 +130,14 @@ let currentModalCancelCallback = null;
 /* ==== Personalización & Backup  ==== */
 let customColors = {
   primaryColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#3b82f6',
-  backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()       || '#f5f6f8',
-  textColor:      getComputedStyle(document.documentElement).getPropertyValue('--text').trim()     || '#1f2937'
+  backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#f5f6f8',
+  textColor: getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#1f2937',
+  cardBgColor: getComputedStyle(document.documentElement).getPropertyValue('--card').trim() || '#ffffff',
+  secondaryBgColor: getComputedStyle(document.documentElement).getPropertyValue('--secondary-bg')?.trim() || '#e5e7eb'
 };
+
+
+
 
 let autoBackupEnabled = true;
 let lastAutoDailyBackupDate = '';   // ISO string del último backup
@@ -213,28 +218,40 @@ async function enterApp() {
   appContent = $("#appContent");
   appContent.classList.remove("hidden");
 
+  document.querySelectorAll(".tab-button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      showTab(btn.dataset.tab);
+    });
+  });
+
   assignDOMElementsApp();
   bindAppEvents();
 
   uiMounted = true;
 
-  applyDarkMode(); // según config grabada
   await setupListeners();
+  applyDarkMode();
   ensurePricesMatrix();
   renderAll();
   showDailyNotificationsIfNeeded();
+
+  // ✅ Mostrar la pestaña por defecto (solo una vez)
+  showTab("registro");
 }
+
+
 
 /* ------------ DOM APP ------------ */
 function assignDOMElementsApp() {
   logoutBtn = $("#logoutBtn");
   toggleDarkModeConfig = $("#toggleDarkModeConfig");
+  tabButtons = [...document.querySelectorAll(".tab-button")];
+
 
   tabButtons = [...$$(".tab-button")];
   contentSections = {
     registro: $("#contentRegistro"),
     inventario: $("#contentInventario"),
-    resumen: $("#contentResumen"),
     clientes: $("#contentClientes"),
     config: $("#contentConfig"),
     caja: $("#contentCaja"),
@@ -291,7 +308,7 @@ function assignDOMElementsApp() {
   resumenSemGastos = $("#resumenSemGastos");
   resumenSemGanancia = $("#resumenSemGanancia");
   resumenSemanaPropinas = $("#resumenSemanaPropinas");
-   
+
 
   resumenMesVehiculos = $("#resumenMesVehiculos");
   resumenMesUsd = $("#resumenMesUsd");
@@ -444,20 +461,29 @@ if (secondaryBgColorPicker) secondaryBgColorPicker.addEventListener("input", onC
 }
 
 /* ------------ Tabs ------------ */
-function showTab(tabId) {
-  if (!uiMounted) return;
-  for (const [k, sec] of Object.entries(contentSections)) {
-    if (k === tabId) sec.classList.remove("hidden");
-    else sec.classList.add("hidden");
+function showTab(tabName) {
+  for (const [name, section] of Object.entries(contentSections)) {
+    if (section) {
+      if (name === tabName) {
+        section.classList.remove("hidden");
+      } else {
+        section.classList.add("hidden");
+      }
+    }
   }
-  tabButtons.forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.tab === tabId);
-  });
 
-  if (tabId === "resumen") {
-    renderCharts();
+  tabButtons.forEach(btn => {
+    if (btn.dataset.tab === tabName) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+  if (tabName === "caja") {
+  renderCharts();
   }
 }
+
 
 /* ------------ Listeners Firestore ------------ */
 async function setupListeners() {
@@ -610,6 +636,20 @@ function ensurePricesMatrix() {
   });
   if (changed) saveConfigToFirestoreBasic();
 }
+async function updateConfig(data) {
+  const configRef = doc(db, "config", "general");
+  try {
+    const snap = await getDoc(configRef);
+    if (snap.exists()) {
+      await updateDoc(configRef, data);
+    } else {
+      await setDoc(configRef, data);  // 🔄 esto crea el documento si no existe
+    }
+  } catch (err) {
+    console.error("Error al actualizar config general:", err);
+  }
+}
+
 
 /* ------------ Render All ------------ */
 function renderAll() {
@@ -1137,6 +1177,7 @@ function renderResumen() {
   if (resumenMesPropinas) resumenMesPropinas.textContent = formatUSD(mProp);
 
   renderDailyGoals({ vehiculos: dVeh, usd: dUsd });
+  renderTablaGastosDelDia();
 }
 
 
@@ -1665,22 +1706,56 @@ function onToggleDarkConfig(e) {
   saveConfigToFirestoreBasic();
 }
 function applyDarkMode() {
-  document.documentElement.classList.toggle("dark", !!isDarkModeEnabled);
-  if (toggleDarkModeConfig) toggleDarkModeConfig.checked = !!isDarkModeEnabled;
+  const enable = !!isDarkModeEnabled;
+  document.documentElement.classList.toggle("dark", enable);
+  document.body.classList.toggle("dark", enable); // NUEVO: necesario para que estilos a nivel de body funcionen
+  if (toggleDarkModeConfig) toggleDarkModeConfig.checked = enable;
 }
+
 /* ---------- Colores ---------- */
 function applyCustomColors() {
   const r = document.documentElement;
-  r.style.setProperty('--primary',        customColors.primaryColor);
-  r.style.setProperty('--bg',             customColors.backgroundColor);
-  r.style.setProperty('--text',           customColors.textColor);
-  r.style.setProperty('--card',           customColors.cardBgColor);
-  r.style.setProperty('--secondary-bg',   customColors.secondaryBgColor);
+
+  // Este sí se mantiene siempre
+  r.style.setProperty('--primary', customColors.primaryColor, 'important');
+
+  if (!document.documentElement.classList.contains("dark")) {
+    r.style.setProperty('--bg', customColors.backgroundColor);
+    r.style.setProperty('--text', customColors.textColor);
+
+    const cardColor = customColors.cardBgColor || shadeColor(customColors.backgroundColor, -5);
+    const secondaryColor = customColors.secondaryBgColor || shadeColor(customColors.backgroundColor, 5);
+    r.style.setProperty('--card', cardColor);
+    r.style.setProperty('--secondary-bg', secondaryColor);
+  } else {
+    r.style.removeProperty('--bg');
+    r.style.removeProperty('--text');
+    r.style.removeProperty('--card');
+    r.style.removeProperty('--secondary-bg');
+  }
 }
 
 
 
+function shadeColor(color, percent) {
+  let R = parseInt(color.substring(1, 3), 16);
+  let G = parseInt(color.substring(3, 5), 16);
+  let B = parseInt(color.substring(5, 7), 16);
 
+  R = parseInt((R * (100 + percent)) / 100);
+  G = parseInt((G * (100 + percent)) / 100);
+  B = parseInt((B * (100 + percent)) / 100);
+
+  R = R < 255 ? R : 255;
+  G = G < 255 ? G : 255;
+  B = B < 255 ? B : 255;
+
+  const RR = R.toString(16).padStart(2, '0');
+  const GG = G.toString(16).padStart(2, '0');
+  const BB = B.toString(16).padStart(2, '0');
+
+  return `#${RR}${GG}${BB}`;
+}
 
 function resetColorsToDefault() {
   customColors = {
@@ -1700,29 +1775,71 @@ if (secondaryBgColorPicker) secondaryBgColorPicker.value = customColors.secondar
   saveConfigToFirestoreBasic();
 }
 /* ---------- Backup ---------- */
-function runDailyAutoBackupIfNeeded() {
-  const today = new Date().toISOString().split('T')[0];
-  if (!autoBackupEnabled || lastAutoDailyBackupDate === today) return;
+async function runDailyAutoBackupIfNeeded() {
+  if (!autoBackupEnabled) return;
 
-  // 1) Genera resumen del día anterior
-  const yesterday = new Date(Date.now() - 864e5).toISOString().split('T')[0];
-  const summary = getSummaryDataForDate(yesterday);  // ya existe en tu código
+  const today = new Date().toISOString().split("T")[0];
+  if (lastAutoDailyBackupDate === today) return;
 
-  // 2) Sube a Firestore
-  addDoc(collection(db, 'backups'), {
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+
+  const resumen = getSummaryDataForDate(yesterday);
+
+  const registros = registroDiarioData.filter(r => r.fecha === yesterday);
+  const movimientos = movimientosInv.filter(m => m.fecha === yesterday);
+  const gastos = gastosData.filter(g => g.fecha === yesterday);
+
+  const fullBackup = {
     fecha: yesterday,
-    resumen: summary,
-    createdAt: serverTimestamp()
-  }).then(() => {
+    resumen,
+    registros,
+    movimientosInventario: movimientos,
+    gastos
+  };
+
+  try {
+    await setDoc(doc(db, "resumenDiarioBackup", yesterday), fullBackup);
     lastAutoDailyBackupDate = today;
-    saveConfigToFirestoreBasic();      // guarda la nueva fecha
-    logEvent('INFO', `Backup diario auto ${yesterday}`);
-  }).catch(err => {
-    console.error('auto-backup', err);
-    logEvent('ERROR', `Backup diario falló ${err.message}`);
-  });
+    await updateConfig({ lastAutoDailyBackupDate: today });
+    console.log("✅ Backup completo del día guardado:", fullBackup);
+  } catch (err) {
+    console.error("❌ Error al guardar backup diario:", err);
+  }
 }
 
+
+function getSummaryDataForDate(dateStr) {
+  const registros = registroDiarioData.filter(r => r.fecha === dateStr);
+
+  let totalVehiculos = 0;
+  let totalUsd = 0;
+  let totalBs = 0;
+  let totalProd = 0;
+  let totalProp = 0;
+
+  registros.forEach(r => {
+    if (r.servicio !== "Solo Venta de Productos") totalVehiculos++;
+    totalUsd += r.montoDolares || 0;
+    totalBs += r.montoBs || 0;
+    totalProd += r.costoTotalProductosAdicionalesUSD || 0;
+    totalProp += r.propinas || 0;
+  });
+
+  const gastos = gastosData.filter(g => g.fecha === dateStr);
+  const totalGastos = gastos.reduce((sum, g) => sum + (g.monto || 0), 0);
+  const gananciaBruta = totalUsd - totalProd;
+
+  return {
+    fecha: dateStr,
+    totalVehiculos,
+    totalUsd,
+    totalBs,
+    totalProd,
+    totalGastos,
+    gananciaBruta,
+    totalPropinas: totalProp
+  };
+}
 
 /* ------------ Helpers ------------ */
 function cleanMoney(txt) {
@@ -1827,4 +1944,123 @@ function showModalFormReab(item) {
   currentModalCancelCallback = () => hideCustomModal();
 
   customModal.classList.remove("hidden");
+}
+async function onAgregarGasto() {
+  const descripcion = document.getElementById("gastoDescripcion").value.trim();
+  const monto = parseFloat(document.getElementById("gastoMonto").value);
+  const fecha = document.getElementById("gastoFecha").value || new Date().toISOString().split("T")[0];
+
+  if (!descripcion || isNaN(monto) || monto <= 0) {
+    alert("Completa una descripción válida y un monto mayor a cero.");
+    return;
+  }
+
+  const nuevoGasto = {
+    descripcion,
+    monto,
+    fecha,
+    timestamp: serverTimestamp()
+  };
+
+  try {
+    const docRef = await addDoc(collection(db, "gastos"), nuevoGasto);
+    nuevoGasto.id = docRef.id;
+    if (!gastosData.some(g => g.id === docRef.id)) {
+  gastosData.push(nuevoGasto);
+  }
+    renderResumen();
+    renderTablaGastosDelDia();
+ // solo si tienes función para mostrar gastos
+    showCustomAlert("Gasto registrado correctamente.", "OK");
+  } catch (err) {
+    console.error("Error al registrar gasto:", err);
+    showCustomAlert("Error al guardar el gasto", "Error");
+
+  }
+
+  document.getElementById("gastoDescripcion").value = "";
+  document.getElementById("gastoMonto").value = "";
+  document.getElementById("gastoFecha").value = "";
+}
+function renderTablaGastosDelDia() {
+  const tbody = document.getElementById("tablaGastosBody");
+  if (!tbody) return;
+
+  const hoy = new Date().toISOString().split("T")[0];
+  const gastosHoy = gastosData.filter(g => g.fecha === hoy).sort((a, b) => b.timestamp?.seconds - a.timestamp?.seconds);
+
+
+  if (gastosHoy.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--muted)">Sin gastos registrados hoy</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = gastosHoy.map(gasto => `
+    <tr>
+      <td>${gasto.descripcion}</td>
+      <td>$${gasto.monto.toFixed(2)}</td>
+      <td>${gasto.fecha}</td>
+      <td>
+      <td style="text-align: right;">
+      <button class="btn btn-small" onclick="onEditarGasto('${gasto.id}')">Editar</button>
+      <button class="btn btn-small btn-danger" onclick="onEliminarGasto('${gasto.id}')">Eliminar</button>
+      </td>
+      </td>
+    </tr>
+  `).join("");
+}
+async function onEditarGasto(id) {
+  const gasto = gastosData.find(g => g.id === id);
+  if (!gasto) return alert("Gasto no encontrado.");
+
+  const pin = prompt("🔐 Ingresa el PIN de administrador:");
+  if (pin !== ADMIN_PIN) return alert("PIN incorrecto.");
+
+  const nuevaDescripcion = prompt("Editar descripción:", gasto.descripcion);
+  if (!nuevaDescripcion) return;
+
+  const nuevoMonto = parseFloat(prompt("Editar monto (USD):", gasto.monto));
+  if (isNaN(nuevoMonto) || nuevoMonto <= 0) return;
+
+  try {
+    await updateDoc(doc(db, "gastos", id), {
+      descripcion: nuevaDescripcion,
+      monto: nuevoMonto
+    });
+
+    gasto.descripcion = nuevaDescripcion;
+    gasto.monto = nuevoMonto;
+    renderTablaGastosDelDia();
+    renderResumen();
+  } catch (err) {
+    console.error("Error al editar gasto:", err);
+    alert("Error al editar el gasto.");
+  }
+}
+async function onEliminarGasto(id) {
+  const gasto = gastosData.find(g => g.id === id);
+  if (!gasto) return alert("Gasto no encontrado.");
+
+  const pin = prompt("🔐 Ingresa el PIN de administrador para eliminar:");
+  if (pin !== ADMIN_PIN) return alert("PIN incorrecto.");
+
+  const confirmar = confirm(`¿Eliminar el gasto "${gasto.descripcion}" por $${gasto.monto}?`);
+  if (!confirmar) return;
+
+  try {
+    await deleteDoc(doc(db, "gastos", id));
+    gastosData = gastosData.filter(g => g.id !== id);
+    renderTablaGastosDelDia();
+    renderResumen();
+  } catch (err) {
+    console.error("Error al eliminar gasto:", err);
+    alert("Error al eliminar el gasto.");
+  }
+}
+window.onAgregarGasto = onAgregarGasto;
+window.onEditarGasto = onEditarGasto;
+window.onEliminarGasto = onEliminarGasto;
+
+if (window.innerWidth <= 768) {
+  document.body.classList.add("mobile");
 }
