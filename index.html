@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sistema de Control Autolavado v7.4.6-classic</title>
+  <title>Sistema de Control Autolavado v1.0.0-classic</title>
 
-  <link rel="icon" href="https://firebasestorage.googleapis.com/v0/b/orinocoapp-67c09.firebasestorage.app/o/favicon.ico?alt=media&token=29f6a227-285d-43a1-98d8-210fe41bf34b" />
+  <link rel="icon" href="https://firebasestorage.googleapis.com/v0/b/orinocoapp-67c09.firebasestorage.app/o/icon%2Ffavicon.ico?alt=media&token=9ccebb66-dd87-4e16-962c-31a1a8b799c1" />
   <link rel="stylesheet" href="assets/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -14,9 +14,9 @@
   <!-- LOGIN -->
   <section id="loginScreen" class="login-wrap">
     <div class="auth-card">
-      <img src="https://i.ibb.co/j9YGRyPp/LOGO.png" alt="logo" class="auth-logo" />
+      <img src="https://firebasestorage.googleapis.com/v0/b/orinocoapp-67c09.firebasestorage.app/o/img%2FLOGO.png?alt=media&token=68fa3f1f-3946-49d8-95a6-e1adc7406f90" alt="logo" class="auth-logo" />
       <h1 class="auth-title">Sistema de Control Autolavado</h1>
-      <div class="auth-version">Versión 7.4.6-classic</div>
+      <div class="auth-version">Versión 1.0.0-classic</div>
 
       <label for="pinInput" class="auth-label text-center">INGRESE PIN</label>
       <input id="pinInput" type="password" class="auth-input" maxlength="6" autocomplete="off" />
@@ -30,27 +30,28 @@
     <nav class="navbar sticky">
       <div class="container nav-inner">
         <div class="nav-left">
-          <img src="https://i.ibb.co/j9YGRyPp/LOGO.png" alt="logo" class="nav-logo">
+          <img src="https://firebasestorage.googleapis.com/v0/b/orinocoapp-67c09.firebasestorage.app/o/img%2FLOGO.png?alt=media&token=68fa3f1f-3946-49d8-95a6-e1adc7406f90" alt="logo" class="nav-logo">
           <div>
-            <h2 class="nav-title">Sistema de Control Autolavado</h2>
+            <h2 class="nav-title">Orinoco Cloud</h2>
             <!-- versión eliminada del título superior -->
           </div>
         </div>
 
         <div class="nav-right">
-          <button id="logoutBtn" class="btn btn-danger">Cerrar sesión</button>
+          <button id="logoutBtn" class="btn btn-danger" title="Cerrar sesión">
+            <img src="https://firebasestorage.googleapis.com/v0/b/orinocoapp-67c09.firebasestorage.app/o/icon%2Flogoutwhite.png?alt=media&token=30bdbf6c-067a-4b72-88d4-9f49f7fc0f1a" alt="logout"  class="logouticon"/>
+          </button>
         </div>
       </div>
 
       <div class="container">
         <div class="tabs">
-          <button class="tab-button active" data-tab="registro"      id="tabRegistro">Registro</button>
-          <button class="tab-button"           data-tab="inventario"   id="tabInventario">Inventario</button>
-          <button class="tab-button"           data-tab="resumen"      id="tabResumen">Resumen</button>
-          <button class="tab-button"           data-tab="clientes"     id="tabClientes">Clientes</button>
-          <button class="tab-button"           data-tab="caja"         id="tabCaja">Caja / Turnos</button>
-          <button class="tab-button"           data-tab="auditoria"    id="tabAuditoria">Auditoría</button>
-	<button class="tab-button"           data-tab="config"       id="tabConfig">Configuración</button>
+          <button class="tab-button active" data-tab="registro">Registro</button>
+          <button class="tab-button"           data-tab="inventario">Inventario</button>
+          <button class="tab-button"           data-tab="clientes">Clientes</button>
+          <button class="tab-button"           data-tab="caja">Caja / Turnos</button>
+          <button class="tab-button"           data-tab="auditoria">Auditoría</button>
+	        <button class="tab-button"           data-tab="config">Configuración</button>
         </div>
       </div>
     </nav>
@@ -276,74 +277,10 @@
       </section>
 
       <!-- ======= RESUMEN (incluye GRÁFICAS) ======= -->
-      <section id="contentResumen" class="tab-content hidden">
-        <div class="card">
-          <div class="card-title">Metas del día</div>
-          <div id="dailyGoalsWrapper"></div>
-        </div>
 
-        <div class="card">
-          <div class="card-title">Cierres</div>
-
-          <h4>Diario</h4>
-          <div class="resumen-grid">
-            <div class="resume-box"><span class="label">Vehículos</span><span id="resumenDiaVehiculos">0</span></div>
-            <div class="resume-box"><span class="label">Ingresos USD</span><span id="resumenDiaUsd">$0.00</span></div>
-            <div class="resume-box"><span class="label">Ingresos Bs</span><span id="resumenDiaBs">Bs 0,00</span></div>
-            <div class="resume-box"><span class="label">Productos vendidos (USD)</span><span id="resumenDiaCostoProd">$0.00</span></div>
-            <div class="resume-box"><span class="label">Gastos (USD)</span><span id="resumenDiaGastos">$0.00</span></div>
-            <div class="resume-box"><span class="label">Ganancia Bruta (USD)</span><span id="resumenDiaGanancia">$0.00</span></div>
-	    <div class="resume-box"><span class="label">Propinas USD</span><span id="resumenDiaPropinas">$0.00</span></div>
-          </div>
-
-          <h4>Semanal</h4>
-          <div class="resumen-grid">
-            <div class="resume-box"><span class="label">Vehículos</span><span id="resumenSemVehiculos">0</span></div>
-            <div class="resume-box"><span class="label">Ingresos USD</span><span id="resumenSemUsd">$0.00</span></div>
-            <div class="resume-box"><span class="label">Ingresos Bs</span><span id="resumenSemBs">Bs 0,00</span></div>
-            <div class="resume-box"><span class="label">Productos vendidos (USD)</span><span id="resumenSemCostoProd">$0.00</span></div>
-            <div class="resume-box"><span class="label">Gastos (USD)</span><span id="resumenSemGastos">$0.00</span></div>
-            <div class="resume-box"><span class="label">Ganancia Bruta (USD)</span><span id="resumenSemGanancia">$0.00</span></div>
-	    <div class="resume-box"><span class="label">Propinas USD</span><span id="resumenSemanaPropinas">$0.00</span></div>
-          </div>
-
-          <h4>Mensual</h4>
-          <div class="resumen-grid">
-            <div class="resume-box"><span class="label">Vehículos</span><span id="resumenMesVehiculos">0</span></div>
-            <div class="resume-box"><span class="label">Ingresos USD</span><span id="resumenMesUsd">$0.00</span></div>
-            <div class="resume-box"><span class="label">Ingresos Bs</span><span id="resumenMesBs">Bs 0,00</span></div>
-            <div class="resume-box"><span class="label">Productos vendidos (USD)</span><span id="resumenMesCostoProd">$0.00</span></div>
-            <div class="resume-box"><span class="label">Gastos (USD)</span><span id="resumenMesGastos">$0.00</span></div>
-            <div class="resume-box"><span class="label">Ganancia Bruta (USD)</span><span id="resumenMesGanancia">$0.00</span></div>
-	    <div class="resume-box"><span class="label">Propinas USD</span><span id="resumenMesPropinas">$0.00</span></div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Reportes Gráficos</div>
-          <div id="chartsContainer">
-          <div class="chart-card">
-            <h4>Ingresos por Día de la Semana</h4>
-            <canvas id="chartIngresosSemana" height="160"></canvas>
-          </div>
-          <div class="chart-card">
-            <h4>Servicios más vendidos</h4>
-            <canvas id="chartServicios" height="160"></canvas>
-          </div>
-          <div class="chart-card">
-            <h4>Productos más vendidos</h4>
-            <canvas id="chartProductos" height="160"></canvas>
-          </div>
-          <div class="chart-card">
-            <h4>Vehículos más atendidos</h4>
-            <canvas id="chartVehiculos" height="160"></canvas>
-          </div>
-          </div>
-        </div>
-      </section>
 
       <!-- ======= CLIENTES ======= -->
-      <section id="contentClientes" class="tab-content hidden">
+      <section id="contentClientes" class="tab-content main-area hidden">
         <div class="card">
           <div class="card-title">Nuevo cliente</div>
           <div class="form-row-4 align-end">
@@ -446,7 +383,7 @@
 </div>
 
 
-	
+
 
         <div class="card">
           <div class="card-title">Cambiar PIN</div>
@@ -570,6 +507,108 @@
             <tbody id="tableTurnosBody"></tbody>
           </table>
         </div>
+        <div class="card">
+          <div class="card-title">Metas del día</div>
+          <div id="dailyGoalsWrapper"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Cierres</div>
+
+          <h4>Diario</h4>
+          <div class="resumen-grid">
+            <div class="resume-box"><span class="label">Vehículos</span><span id="resumenDiaVehiculos">0</span></div>
+            <div class="resume-box"><span class="label">Ingresos USD</span><span id="resumenDiaUsd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ingresos Bs</span><span id="resumenDiaBs">Bs 0,00</span></div>
+            <div class="resume-box"><span class="label">Productos vendidos (USD)</span><span id="resumenDiaCostoProd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Gastos (USD)</span><span id="resumenDiaGastos">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ganancia Bruta (USD)</span><span id="resumenDiaGanancia">$0.00</span></div>
+	    <div class="resume-box"><span class="label">Propinas USD</span><span id="resumenDiaPropinas">$0.00</span></div>
+          </div>
+
+          <h4>Semanal</h4>
+          <div class="resumen-grid">
+            <div class="resume-box"><span class="label">Vehículos</span><span id="resumenSemVehiculos">0</span></div>
+            <div class="resume-box"><span class="label">Ingresos USD</span><span id="resumenSemUsd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ingresos Bs</span><span id="resumenSemBs">Bs 0,00</span></div>
+            <div class="resume-box"><span class="label">Productos vendidos (USD)</span><span id="resumenSemCostoProd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Gastos (USD)</span><span id="resumenSemGastos">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ganancia Bruta (USD)</span><span id="resumenSemGanancia">$0.00</span></div>
+	    <div class="resume-box"><span class="label">Propinas USD</span><span id="resumenSemanaPropinas">$0.00</span></div>
+          </div>
+
+          <h4>Mensual</h4>
+          <div class="resumen-grid">
+            <div class="resume-box"><span class="label">Vehículos</span><span id="resumenMesVehiculos">0</span></div>
+            <div class="resume-box"><span class="label">Ingresos USD</span><span id="resumenMesUsd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ingresos Bs</span><span id="resumenMesBs">Bs 0,00</span></div>
+            <div class="resume-box"><span class="label">Productos vendidos (USD)</span><span id="resumenMesCostoProd">$0.00</span></div>
+            <div class="resume-box"><span class="label">Gastos (USD)</span><span id="resumenMesGastos">$0.00</span></div>
+            <div class="resume-box"><span class="label">Ganancia Bruta (USD)</span><span id="resumenMesGanancia">$0.00</span></div>
+	    <div class="resume-box"><span class="label">Propinas USD</span><span id="resumenMesPropinas">$0.00</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Reportes Gráficos</div>
+          <div id="chartsContainer">
+          <div class="chart-card">
+            <h4>Ingresos por Día de la Semana</h4>
+            <canvas id="chartIngresosSemana" height="160"></canvas>
+          </div>
+          <div class="chart-card">
+            <h4>Servicios más vendidos</h4>
+            <canvas id="chartServicios" height="160"></canvas>
+          </div>
+          <div class="chart-card">
+            <h4>Productos más vendidos</h4>
+            <canvas id="chartProductos" height="160"></canvas>
+          </div>
+          <div class="chart-card">
+            <h4>Vehículos más atendidos</h4>
+            <canvas id="chartVehiculos" height="160"></canvas>
+          </div>
+          </div>
+        </div>
+        <div class="card">
+  <div class="card-title">Registrar gasto</div>
+
+  <div class="form-row-3">
+    <div>
+      <label>Descripción del gasto</label>
+      <input id="gastoDescripcion" placeholder="Ej: Compra de químicos" />
+    </div>
+    <div>
+      <label>Monto (USD)</label>
+      <input id="gastoMonto" type="number" step="0.01" placeholder="0.00" />
+    </div>
+    <div>
+      <label>Fecha</label>
+      <input id="gastoFecha" type="date" />
+    </div>
+  </div>
+
+  <button class="btn btn-primary mt-2" onclick="onAgregarGasto()">Guardar gasto</button>
+
+  <div id="listaGastos" class="mt-3"></div>
+  <hr class="mt-4 mb-2">
+<h3 class="subsection-title">Histórico de gastos del día</h3>
+
+<div class="table-container">
+  <table class="table">
+    <thead>
+  <tr>
+    <th>Descripción</th>
+    <th>Monto</th>
+    <th>Fecha</th>
+    <th style="text-align: right;">Acciones</th>
+  </tr>
+</thead>
+    <tbody id="tablaGastosBody"></tbody>
+  </table>
+</div>
+
+</div>
       </section>
 
       <!-- ======= AUDITORÍA ======= -->
@@ -593,7 +632,7 @@
     </main>
 
     <footer class="app-footer">
-      Design by <strong>ThOmZam</strong> with <strong>ChatGPT</strong> · v7.4.6‑classic
+      Design by <strong>ThOmZam</strong> with <strong>ChatGPT</strong> · v1.0.0‑classic
     </footer>
   </div>
 
